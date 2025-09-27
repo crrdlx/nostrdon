@@ -16,6 +16,8 @@ The instructions here assume you are using an Ubuntu VPS, but the bridge can als
 
 -  **tmux** (optional, to keep the bridge running in the background)
 
+-  **bash** (for the auto-restart script)
+
   
 
 ### 2. Clone the repository
@@ -102,7 +104,44 @@ sudo  apt  install  tmux
 
 ### 6. Start the bridge
 
--  **With tmux:**
+You have several options for running the bridge:
+
+#### Option A: Auto-restart script (Recommended)
+
+The auto-restart script automatically manages the bridge process, restarting it every 6 hours and monitoring for crashes:
+
+```bash
+
+# Make the script executable (first time only)
+
+chmod +x auto-restart.sh
+
+# Start monitoring mode (runs indefinitely with auto-restart)
+
+./auto-restart.sh monitor
+
+# Or use individual commands:
+
+./auto-restart.sh start     # Start the bridge
+
+./auto-restart.sh stop      # Stop the bridge
+
+./auto-restart.sh restart   # Restart the bridge
+
+./auto-restart.sh status    # Check if bridge is running
+
+./auto-restart.sh test      # Test bridge startup
+
+```
+
+**Auto-restart features:**
+- Automatically restarts the bridge every 6 hours to prevent memory leaks
+- Monitors the bridge process and restarts if it crashes
+- Provides colored logging for easy monitoring
+- Saves process ID for proper cleanup
+- Includes error checking and validation
+
+#### Option B: With tmux
 
 ```bash
 
@@ -116,7 +155,7 @@ node nostr-mastodon-bridge.cjs
 
 ```
 
--  **Without tmux:**
+#### Option C: Direct execution
 
 ```bash
 
@@ -132,11 +171,22 @@ node nostr-mastodon-bridge.cjs
 
 - Check the log file (default: `/tmp/nostr-mastodon-bridge.log`) for errors.
 
+- If using the auto-restart script, also check `/tmp/nostrdon-auto-restart.log` for restart script logs.
+
 - Make sure your `.env` file is correct and in the project directory.
 
 - If you see connection errors, check your internet and relay status.
 
-- If you want to stop the bridge, use `Ctrl+C` or `tmux kill-session -t nostrdon-bridge`.
+- If you want to stop the bridge:
+  - **Auto-restart script**: `./auto-restart.sh stop`
+  - **tmux**: `tmux kill-session -t nostrdon-bridge`
+  - **Direct execution**: `Ctrl+C`
+
+- To check if the auto-restart script is working properly:
+  ```bash
+  ./auto-restart.sh status
+  ./auto-restart.sh test
+  ```
 
   
 
@@ -160,7 +210,10 @@ npm install
 
 ```
 
-- Restart the bridge after updating.
+- Restart the bridge after updating:
+  - **Auto-restart script**: `./auto-restart.sh restart`
+  - **tmux**: `tmux kill-session -t nostrdon-bridge` then start again
+  - **Direct execution**: Stop with `Ctrl+C` and restart
 
   
 
@@ -175,6 +228,20 @@ npm install
 tail -f /tmp/nostr-mastodon-bridge.log
 
 ```
+
+- If using the auto-restart script, you can also monitor the restart script logs:
+
+```bash
+
+tail -f /tmp/nostrdon-auto-restart.log
+
+```
+
+- The auto-restart script is ideal for production environments as it provides:
+  - Automatic recovery from crashes
+  - Scheduled restarts to prevent memory issues
+  - Process management and monitoring
+  - Proper cleanup on shutdown
 
 - If you want to run multiple bridges (for different accounts), use separate directories and `.env` files.
 
